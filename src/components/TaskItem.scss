@@ -76,7 +76,10 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 8px;
+    max-width: 190px;
   }
 
   &__button {
@@ -111,4 +114,31 @@
       color: $color-muted;
     }
   }
+}
+
+// Стан «очікує видалення» (Undoable Delete): приглушення + напис
+.task-item--pending {
+  opacity: 0.55;
+  border-style: dashed;
+
+  .task-item__pending-label {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: $color-danger;
+    font-weight: 600;
+  }
+
+  .task-item__button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+// Режим редагування: форма займає всю ширину елемента
+.task-item--editing {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
