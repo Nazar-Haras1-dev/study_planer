@@ -1,12 +1,12 @@
 import type { TaskFilter } from '../types/task'
 import { FILTER_LABELS } from '../data/labels'
-import { useTaskContext } from '../hooks/useTaskContext'
+import { useUiContext } from '../hooks/useUiContext'
 import './TaskFilters.scss'
 
 const filters = Object.keys(FILTER_LABELS) as TaskFilter[]
 
 function TaskFilters() {
-  const { filter, setFilter } = useTaskContext()
+  const { filter, setFilter } = useUiContext()
 
   return (
     <div className="task-filters" role="group" aria-label="Фільтр завдань">

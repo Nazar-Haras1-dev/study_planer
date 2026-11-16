@@ -2,12 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Priority, Task, TaskFormValues } from '../types/task'
 import { PRIORITY_LABELS } from '../data/labels'
-import { useTaskContext } from '../hooks/useTaskContext'
 import './TaskForm.scss'
 
 interface TaskFormProps {
   // Якщо передано task — форма працює в режимі редагування
   task?: Task
+  // Виклик repository робить батько; форма лише чекає результат (true = успіх)
+  onSubmit: (values: TaskFormValues) => Promise<boolean>
   // Викликається після збереження або скасування (щоб батько закрив режим редагування)
   onDone?: () => void
 }
@@ -19,8 +20,7 @@ const emptyValues: TaskFormValues = {
   priority: 'medium',
 }
 
-function TaskForm({ task, onDone }: TaskFormProps) {
-  const { addTask, updateTask, showToast } = useTaskContext()
+function TaskForm({ task, onSubmit, onDone }: TaskFormProps) {
   const isEdit = task !== undefined
 
   const [values, setValues] = useState<TaskFormValues>(
@@ -34,6 +34,8 @@ function TaskForm({ task, onDone }: TaskFormProps) {
       : emptyValues,
   )
   const [error, setError] = useState('')
+  // Поки запит виконується, кнопку блокуємо, щоб не створити дубль
+  const [submitting, setSubmitting] = useState(false)
 
   // Оновлення одного поля: створюємо новий об'єкт, а не мутуємо старий
   function setField<K extends keyof TaskFormValues>(
@@ -43,31 +45,30 @@ function TaskForm({ task, onDone }: TaskFormProps) {
     setValues((prev) => ({ ...prev, [field]: value }))
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     // Проста валідація: назва обов'язкова
     if (values.title.trim() === '') {
       setError('Вкажіть назву завдання')
-      showToast('Не вдалося зберегти: назва обов\'язкова', 'error')
       return
     }
 
     const cleaned: TaskFormValues = {
       title: values.title.trim(),
       description: values.description.trim(),
-      category: values.category.trim() || 'Загальне',
+      category: values.category.trim() || 'General',
       priority: values.priority,
     }
 
-    // Зміни проходять через dispatch у контексті (reducer), а не мутують об'єкт
-    if (task) {
-      updateTask(task.id, cleaned)
-    } else {
-      addTask(cleaned)
-      // Очищення форми після успішного додавання
-      setValues(emptyValues)
-    }
+    setSubmitting(true)
+    const ok = await onSubmit(cleaned)
+    setSubmitting(false)
+
+    // Після помилки форму не очищуємо, щоб користувач не втратив введене
+    if (!ok) return
+
+    if (!task) setValues(emptyValues)
     setError('')
     onDone?.()
   }
@@ -143,8 +144,8 @@ function TaskForm({ task, onDone }: TaskFormProps) {
             Скасувати
           </button>
         )}
-        <button type="submit" className="task-form__submit">
-          {isEdit ? 'Зберегти' : 'Додати'}
+        <button type="submit" className="task-form__submit" disabled={submitting}>
+          {submitting ? 'Збереження...' : isEdit ? 'Зберегти' : 'Додати'}
         </button>
       </div>
     </form>
