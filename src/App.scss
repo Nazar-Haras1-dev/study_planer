@@ -6,3 +6,11 @@
   margin: 0 auto;
   padding: 32px 16px 56px;
 }
+
+.app__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}

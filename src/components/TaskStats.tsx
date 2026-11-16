@@ -1,11 +1,9 @@
-import type { Task } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
 import './TaskStats.scss'
 
-interface TaskStatsProps {
-  tasks: Task[]
-}
+function TaskStats() {
+  const { tasks } = useTaskContext()
 
-function TaskStats({ tasks }: TaskStatsProps) {
   // Derived state: рахуємо під час render із поточного масиву, окремий state не потрібен
   const total = tasks.length
   const completed = tasks.filter((task) => task.completed).length

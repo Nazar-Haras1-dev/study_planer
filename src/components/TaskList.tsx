@@ -1,18 +1,16 @@
-import type { Task } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
+import { filterTasks } from '../utils/tasks'
 import TaskItem from './TaskItem'
 import './TaskList.scss'
 
-interface TaskListProps {
-  tasks: Task[]
-  // Загальна кількість завдань без фільтра: щоб відрізнити «порожній список» від «порожній результат фільтра»
-  totalCount: number
-  onToggle: (id: number) => void
-  onDelete: (id: number) => void
-}
+function TaskList() {
+  const { tasks, filter } = useTaskContext()
 
-function TaskList({ tasks, totalCount, onToggle, onDelete }: TaskListProps) {
+  // Derived state: фільтрований список обчислюється під час render (без useEffect)
+  const visibleTasks = filterTasks(tasks, filter)
+
   // Умовний рендеринг: два різні порожні стани
-  if (totalCount === 0) {
+  if (tasks.length === 0) {
     return (
       <p className="task-list__empty">
         Завдань поки немає.
@@ -22,20 +20,15 @@ function TaskList({ tasks, totalCount, onToggle, onDelete }: TaskListProps) {
     )
   }
 
-  if (tasks.length === 0) {
+  if (visibleTasks.length === 0) {
     return <p className="task-list__empty">За цим фільтром завдань немає.</p>
   }
 
   return (
     <ul className="task-list">
-      {tasks.map((task) => (
+      {visibleTasks.map((task) => (
         // key = стабільний id, а не індекс масиву
-        <TaskItem
-          key={task.id}
-          task={task}
-          onToggle={onToggle}
-          onDelete={onDelete}
-        />
+        <TaskItem key={task.id} task={task} />
       ))}
     </ul>
   )

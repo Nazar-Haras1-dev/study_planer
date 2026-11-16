@@ -112,3 +112,21 @@
     }
   }
 }
+
+// Стан «очікує видалення» (Undoable Delete): приглушення + напис
+.task-item--pending {
+  opacity: 0.55;
+  border-style: dashed;
+
+  .task-item__pending-label {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: $color-danger;
+    font-weight: 600;
+  }
+
+  .task-item__button:disabled {
+    cursor: not-allowed;
+  }
+}
