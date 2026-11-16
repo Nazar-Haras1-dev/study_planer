@@ -1,19 +1,29 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { TaskFilter, TaskFormValues } from '../types/task'
+import { FILTER_STORAGE_KEY } from '../data/config'
 import { createInitialState, taskReducer } from '../reducers/taskReducer'
+import { useLocalStorage } from '../hooks/useLocalStorage'
+import { loadTasks, saveTasks } from '../utils/taskStorage'
 import { TaskContext } from './taskContextDef'
 import type { TaskContextValue, ToastData, ToastType } from './taskContextDef'
+
+function isTaskFilter(value: unknown): value is TaskFilter {
+  return value === 'all' || value === 'completed' || value === 'active'
+}
 
 interface TaskProviderProps {
   children: ReactNode
 }
 
 export function TaskProvider({ children }: TaskProviderProps) {
+  // Lazy init: reducer стартує зі збережених задач (або з initialTasks як fallback).
+  // Reducer лишається єдиним джерелом правди для tasks.
   const [state, dispatch] = useReducer(taskReducer, undefined, () =>
-    createInitialState(),
+    createInitialState(loadTasks()),
   )
-  const [filter, setFilter] = useState<TaskFilter>('all')
+  // Активний фільтр зберігаємо окремим hook-ом (це не друге джерело для tasks)
+  const [filter, setFilter] = useLocalStorage<TaskFilter>(FILTER_STORAGE_KEY, 'all', isTaskFilter)
   const [toast, setToast] = useState<ToastData | null>(null)
   const toastCounter = useRef(0)
 
@@ -66,6 +76,12 @@ export function TaskProvider({ children }: TaskProviderProps) {
     showToast('Дані скинуто до початкових', 'info')
   }, [showToast])
 
+  // Effect: після кожної зміни tasks записуємо їх у localStorage.
+  // Запис у сховище — side effect, тому він тут, а не в reducer.
+  useEffect(() => {
+    saveTasks(state.tasks)
+  }, [state.tasks])
+
   // Заголовок вкладки синхронізуємо з кількістю невиконаних завдань
   const activeCount = state.tasks.filter((task) => !task.completed).length
   useEffect(() => {
@@ -95,6 +111,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
       state.tasks,
       state.pendingDeletion,
       filter,
+      setFilter,
       addTask,
       updateTask,
       toggleTask,
