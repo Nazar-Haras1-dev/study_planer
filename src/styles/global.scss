@@ -1,0 +1,27 @@
+// Глобальні стилі: лише reset, шрифти та body. Стилі компонентів лежать поруч із ними.
+@use './variables' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family;
+  color: $color-text;
+  background: $color-bg;
+  line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
