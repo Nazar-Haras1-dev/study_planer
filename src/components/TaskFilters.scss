@@ -1,0 +1,32 @@
+@use '../styles/variables' as *;
+
+.task-filters {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+
+  &__button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: $color-muted;
+    font-weight: 600;
+
+    &:hover {
+      background: $color-bg;
+    }
+
+    &--active {
+      background: $color-primary;
+      color: #fff;
+
+      &:hover {
+        background: $color-primary;
+      }
+    }
+  }
+}
