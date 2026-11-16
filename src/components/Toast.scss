@@ -34,19 +34,6 @@
     font-size: 0.92rem;
   }
 
-  &__action {
-    padding: 4px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 8px;
-    background: transparent;
-    color: #fff;
-    font-weight: 600;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-  }
-
   &__close {
     border: none;
     background: transparent;
@@ -66,25 +53,6 @@
   &--info {
     border-left: 4px solid $color-primary;
   }
-
-  &--undo {
-    border-left: 4px solid $color-warning;
-  }
-
-  // Прогрес-бар 5 с: ширина зменшується від 100% до 0 (час задає inline-стиль)
-  &__progress {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-  }
-
-  &__progress-bar {
-    height: 100%;
-    background: $color-warning;
-    transform-origin: left;
-    animation-name: toast-progress;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
-  }
 }
 
 @keyframes toast-in {
@@ -96,15 +64,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes toast-progress {
-  from {
-    transform: scaleX(1);
-  }
-
-  to {
-    transform: scaleX(0);
   }
 }

@@ -1,26 +1,34 @@
 import { useState } from 'react'
-import type { Task } from '../types/task'
+import type { Task, TaskFormValues } from '../types/task'
 import { PRIORITY_LABELS } from '../data/labels'
-import { useTaskContext } from '../hooks/useTaskContext'
 import TaskForm from './TaskForm'
 import './TaskItem.scss'
 
 interface TaskItemProps {
   task: Task
+  // Виконується мережева операція над цим завданням
+  busy: boolean
+  selected: boolean
+  onSelect: (id: number) => void
+  onToggle: (task: Task) => void
+  onUpdate: (id: number, values: TaskFormValues) => Promise<boolean>
+  onDelete: (id: number) => void
 }
 
-function TaskItem({ task }: TaskItemProps) {
-  // Дії беремо з контексту, а не через props-ланцюжок
-  const { toggleTask, requestDelete, pendingDeletion } = useTaskContext()
-  const isPending = pendingDeletion?.ids.includes(task.id) ?? false
-  // Режим редагування — локальний UI-стан одного елемента
+function TaskItem({ task, busy, selected, onSelect, onToggle, onUpdate, onDelete }: TaskItemProps) {
+  // Локальний UI-стан одного елемента: режим редагування та підтвердження видалення
   const [isEditing, setIsEditing] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   if (isEditing) {
     // Повторне використання TaskForm у режимі редагування
     return (
       <li className="task-item task-item--editing">
-        <TaskForm task={task} onDone={() => setIsEditing(false)} />
+        <TaskForm
+          task={task}
+          onSubmit={(values) => onUpdate(task.id, values)}
+          onDone={() => setIsEditing(false)}
+        />
       </li>
     )
   }
@@ -28,7 +36,8 @@ function TaskItem({ task }: TaskItemProps) {
   const className = [
     'task-item',
     task.completed && 'task-item--completed',
-    isPending && 'task-item--pending',
+    selected && 'task-item--selected',
+    busy && 'task-item--busy',
   ]
     .filter(Boolean)
     .join(' ')
@@ -39,8 +48,8 @@ function TaskItem({ task }: TaskItemProps) {
         className="task-item__checkbox"
         type="checkbox"
         checked={task.completed}
-        disabled={isPending}
-        onChange={() => toggleTask(task.id)}
+        disabled={busy}
+        onChange={() => onToggle(task)}
         aria-label={`Виконано: ${task.title}`}
       />
       <div className="task-item__body">
@@ -58,37 +67,58 @@ function TaskItem({ task }: TaskItemProps) {
           <span className="task-item__status">
             {task.completed ? 'Виконано' : 'Не виконано'}
           </span>
-          {isPending && (
-            <span className="task-item__pending-label">Буде видалено</span>
-          )}
+          {busy && <span className="task-item__saving">Збереження...</span>}
         </div>
       </div>
-      <div className="task-item__actions">
-        <button
-          type="button"
-          className="task-item__button"
-          disabled={isPending}
-          onClick={() => toggleTask(task.id)}
-        >
-          {task.completed ? 'Повернути' : 'Виконано'}
-        </button>
-        <button
-          type="button"
-          className="task-item__button"
-          disabled={isPending}
-          onClick={() => setIsEditing(true)}
-        >
-          Редагувати
-        </button>
-        <button
-          type="button"
-          className="task-item__button task-item__button--danger"
-          disabled={isPending}
-          onClick={() => requestDelete(task.id)}
-        >
-          Видалити
-        </button>
-      </div>
+
+      {confirmingDelete ? (
+        // Підтвердження видалення прямо в інтерфейсі (без alert/confirm)
+        <div className="task-item__confirm" role="alertdialog" aria-label="Підтвердження видалення">
+          <span className="task-item__confirm-text">Видалити це завдання?</span>
+          <div className="task-item__actions">
+            <button
+              type="button"
+              className="task-item__button task-item__button--danger"
+              disabled={busy}
+              onClick={() => {
+                setConfirmingDelete(false)
+                onDelete(task.id)
+              }}
+            >
+              Так, видалити
+            </button>
+            <button
+              type="button"
+              className="task-item__button"
+              onClick={() => setConfirmingDelete(false)}
+            >
+              Скасувати
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="task-item__actions">
+          <button type="button" className="task-item__button" onClick={() => onSelect(task.id)}>
+            Деталі
+          </button>
+          <button
+            type="button"
+            className="task-item__button"
+            disabled={busy}
+            onClick={() => setIsEditing(true)}
+          >
+            Редагувати
+          </button>
+          <button
+            type="button"
+            className="task-item__button task-item__button--danger"
+            disabled={busy}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            Видалити
+          </button>
+        </div>
+      )}
     </li>
   )
 }
