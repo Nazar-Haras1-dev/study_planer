@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Priority, TaskFormValues } from '../types/task'
+import { useTaskContext } from '../hooks/useTaskContext'
 import { PRIORITY_LABELS } from '../data/labels'
 import './TaskForm.scss'
 
-interface TaskFormProps {
-  onAdd: (values: TaskFormValues) => void
-}
 
 const emptyValues: TaskFormValues = {
   title: '',
@@ -15,7 +13,8 @@ const emptyValues: TaskFormValues = {
   priority: 'medium',
 }
 
-function TaskForm({ onAdd }: TaskFormProps) {
+function TaskForm() {
+  const { addTask } = useTaskContext()
   const [values, setValues] = useState<TaskFormValues>(emptyValues)
   const [error, setError] = useState('')
 
@@ -36,7 +35,7 @@ function TaskForm({ onAdd }: TaskFormProps) {
       return
     }
 
-    onAdd({
+    addTask({
       title: values.title.trim(),
       description: values.description.trim(),
       category: values.category.trim() || 'Загальне',
