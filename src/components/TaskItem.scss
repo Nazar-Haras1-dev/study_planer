@@ -76,7 +76,10 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 8px;
+    max-width: 190px;
   }
 
   &__button {
@@ -129,4 +132,13 @@
   .task-item__button:disabled {
     cursor: not-allowed;
   }
+}
+
+// Режим редагування: форма займає всю ширину елемента
+.task-item--editing {
+  display: block;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }

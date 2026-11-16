@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import type { Task } from '../types/task'
 import { PRIORITY_LABELS } from '../data/labels'
 import { useTaskContext } from '../hooks/useTaskContext'
+import TaskForm from './TaskForm'
 import './TaskItem.scss'
 
 interface TaskItemProps {
@@ -11,6 +13,17 @@ function TaskItem({ task }: TaskItemProps) {
   // Дії беремо з контексту, а не через props-ланцюжок
   const { toggleTask, requestDelete, pendingDeletion } = useTaskContext()
   const isPending = pendingDeletion?.ids.includes(task.id) ?? false
+  // Режим редагування — локальний UI-стан одного елемента
+  const [isEditing, setIsEditing] = useState(false)
+
+  if (isEditing) {
+    // Повторне використання TaskForm у режимі редагування
+    return (
+      <li className="task-item task-item--editing">
+        <TaskForm task={task} onDone={() => setIsEditing(false)} />
+      </li>
+    )
+  }
 
   const className = [
     'task-item',
@@ -58,6 +71,14 @@ function TaskItem({ task }: TaskItemProps) {
           onClick={() => toggleTask(task.id)}
         >
           {task.completed ? 'Повернути' : 'Виконано'}
+        </button>
+        <button
+          type="button"
+          className="task-item__button"
+          disabled={isPending}
+          onClick={() => setIsEditing(true)}
+        >
+          Редагувати
         </button>
         <button
           type="button"
