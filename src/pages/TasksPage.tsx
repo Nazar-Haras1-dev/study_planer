@@ -7,6 +7,7 @@ import TaskForm from '../components/TaskForm'
 import TaskStats from '../components/TaskStats'
 import TaskFilters from '../components/TaskFilters'
 import TaskList from '../components/TaskList'
+import TaskDetails from '../components/TaskDetails'
 import Pagination from '../components/Pagination'
 import StatePanel from '../components/StatePanel'
 
@@ -35,6 +36,11 @@ function TasksPage() {
     <main className="app">
       <Header />
       <TaskForm onSubmit={tasksState.addTask} />
+
+      {selectedId !== null && (
+        // key: при виборі іншого завдання компонент створюється заново зі свіжим запитом
+        <TaskDetails key={selectedId} taskId={selectedId} onClose={() => setSelectedId(null)} />
+      )}
 
       {status === 'success' && <TaskStats tasks={tasks} />}
       <TaskFilters />
