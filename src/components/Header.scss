@@ -1,0 +1,16 @@
+@use '../styles/variables' as *;
+
+.header {
+  text-align: center;
+
+  &__title {
+    margin: 0;
+    color: $color-primary-dark;
+    font-size: 2rem;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    color: $color-muted;
+  }
+}
