@@ -11,8 +11,3 @@ export function filterTasks(tasks: Task[], filter: TaskFilter): Task[] {
       return tasks
   }
 }
-
-// Наступний унікальний id (без глобальних лічильників, тож функція чиста)
-export function getNextId(tasks: Task[]): number {
-  return tasks.reduce((max, task) => Math.max(max, task.id), 0) + 1
-}
