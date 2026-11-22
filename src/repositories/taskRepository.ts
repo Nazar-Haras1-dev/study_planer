@@ -1,5 +1,6 @@
 import { httpClient } from '../api/httpClient'
 import { HttpError } from '../api/errors'
+import { authStore } from '../auth/authStore'
 import type { ApiTodo, TodosResponse } from '../types/api'
 import type { Priority, Task, TaskFormValues } from '../types/task'
 
@@ -43,6 +44,16 @@ function toTask(todo: ApiTodo): Task {
     title: todo.todo,
     completed: todo.completed,
     ...meta,
+    // API надає лише userId власника; дата створення серверу невідома
+    createdBy: `Користувач #${todo.userId}`,
+    createdAt: null,
+  }
+}
+
+// Авторизація перед захищеною дією: без токена запит навіть не починається
+function requireAuth(): void {
+  if (!authStore.isAuthenticated()) {
+    throw new HttpError(401, 'Потрібно увійти в систему')
   }
 }
 
@@ -58,7 +69,7 @@ export const taskRepository = {
   ): Promise<TaskPage> {
     const data = await httpClient.get<TodosResponse>(
       `/todos?limit=${limit}&skip=${skip}`,
-      signal,
+      { signal },
     )
     const apiTasks = data.todos.map(toTask)
     // Створені в цій сесії завдання показуємо зверху першої сторінки
@@ -70,17 +81,23 @@ export const taskRepository = {
   async getById(id: number, signal?: AbortSignal): Promise<Task> {
     const local = localTasks.get(id)
     if (local) return local
-    const todo = await httpClient.get<ApiTodo>(`/todos/${id}`, signal)
+    const todo = await httpClient.get<ApiTodo>(`/todos/${id}`, { signal })
     return toTask(todo)
   },
 
   // POST /todos/add
   async create(values: TaskFormValues): Promise<Task> {
-    const created = await httpClient.post<ApiTodo>('/todos/add', {
-      todo: values.title,
-      completed: false,
-      userId: 1,
-    })
+    requireAuth()
+    const author = authStore.getSession()
+    const created = await httpClient.post<ApiTodo>(
+      '/todos/add',
+      {
+        todo: values.title,
+        completed: false,
+        userId: author?.user.id ?? 1,
+      },
+      { auth: true },
+    )
     // Сервер завжди повертає той самий id, тож робимо локально унікальним
     const lastLocalId = Math.max(0, ...localTasks.keys())
     const id = Math.max(created.id, lastLocalId + 1)
@@ -91,6 +108,9 @@ export const taskRepository = {
       description: values.description,
       category: values.category,
       priority: values.priority,
+      // client-owned metadata: автор і дата створення
+      createdBy: author?.user.username ?? 'unknown',
+      createdAt: new Date().toISOString(),
     }
     localTasks.set(id, task)
     clientMeta.set(id, {
@@ -103,6 +123,7 @@ export const taskRepository = {
 
   // PATCH /todos/:id — оновлення (назва, completed; решта — client-only metadata)
   async update(id: number, changes: TaskChanges): Promise<Task> {
+    requireAuth()
     const current = clientMeta.get(id) ?? defaultMeta
     const nextMeta: TaskMeta = {
       description: changes.description ?? current.description,
@@ -128,20 +149,21 @@ export const taskRepository = {
     if (changes.title !== undefined) body.todo = changes.title
     if (changes.completed !== undefined) body.completed = changes.completed
 
-    const todo = await httpClient.patch<ApiTodo>(`/todos/${id}`, body)
+    const todo = await httpClient.patch<ApiTodo>(`/todos/${id}`, body, { auth: true })
     clientMeta.set(id, nextMeta)
     return toTask(todo)
   },
 
   // DELETE /todos/:id
   async delete(id: number): Promise<void> {
+    requireAuth()
     if (isLocal(id)) {
       localTasks.delete(id)
       clientMeta.delete(id)
       return
     }
     try {
-      await httpClient.delete<ApiTodo>(`/todos/${id}`)
+      await httpClient.delete<ApiTodo>(`/todos/${id}`, { auth: true })
     } catch (error) {
       // Уже видалене на сервері — для користувача результат той самий
       if (!(error instanceof HttpError && error.status === 404)) throw error

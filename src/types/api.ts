@@ -12,3 +12,25 @@ export interface TodosResponse {
   skip: number
   limit: number
 }
+
+// Відповідь POST /auth/login
+export interface ApiLoginResponse {
+  id: number
+  username: string
+  email: string
+  firstName: string
+  lastName: string
+  image?: string
+  accessToken: string
+  refreshToken: string
+}
+
+// Відповідь GET /auth/me
+export interface ApiUser {
+  id: number
+  username: string
+  email: string
+  firstName: string
+  lastName: string
+  image?: string
+}

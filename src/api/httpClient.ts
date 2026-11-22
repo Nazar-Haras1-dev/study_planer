@@ -1,10 +1,15 @@
 import { HttpError, NetworkError, isAbortError } from './errors'
+import { authStore } from '../auth/authStore'
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   // Сигнал AbortController: дозволяє скасувати запит ззовні
   signal?: AbortSignal
+  // Запит потребує авторизації: токен береться зі сховища сесії
+  auth?: boolean
+  // Явно переданий токен (потрібен, поки сесії ще немає: login -> /auth/me)
+  token?: string
 }
 
 // Базовий URL беремо зі змінної середовища (див. .env.example)
@@ -16,6 +21,20 @@ function buildUrl(path: string): string {
   return `${base.replace(/\/$/, '')}${path}`
 }
 
+// Єдине місце, де формується заголовок Authorization: Bearer <token>.
+// Компоненти й repository про токен нічого не знають.
+function buildHeaders(options: RequestOptions): Record<string, string> {
+  const headers: Record<string, string> = {}
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json'
+
+  const token = options.token ?? (options.auth ? authStore.getToken() : null)
+  if (options.auth && !token) {
+    throw new HttpError(401, 'Потрібно увійти в систему')
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+  return headers
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, signal } = options
 
@@ -23,13 +42,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   try {
     response = await fetch(buildUrl(path), {
       method,
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+      headers: buildHeaders(options),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
     })
   } catch (error) {
-    // AbortError прокидаємо як є, щоб верхній рівень міг його проігнорувати
-    if (isAbortError(error)) throw error
+    // AbortError та помилки авторизації прокидаємо як є
+    if (isAbortError(error) || error instanceof HttpError) throw error
     throw new NetworkError()
   }
 
@@ -40,7 +59,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       const data = (await response.json()) as { message?: string }
       if (data.message) message = data.message
     } catch {
-      // тіло відповіді не JSON — лишаємо statusText
+      // тіло відповіді не JSON: лишаємо statusText
     }
     throw new HttpError(response.status, message)
   }
@@ -48,10 +67,15 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return (await response.json()) as T
 }
 
+type CallOptions = Pick<RequestOptions, 'signal' | 'auth' | 'token'>
+
 // Тонкий шар над fetch: UI та repository нічого не знають про fetch
 export const httpClient = {
-  get: <T>(path: string, signal?: AbortSignal) => request<T>(path, { signal }),
-  post: <T>(path: string, body: unknown) => request<T>(path, { method: 'POST', body }),
-  patch: <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  get: <T>(path: string, options?: CallOptions) => request<T>(path, { ...options }),
+  post: <T>(path: string, body: unknown, options?: CallOptions) =>
+    request<T>(path, { ...options, method: 'POST', body }),
+  patch: <T>(path: string, body: unknown, options?: CallOptions) =>
+    request<T>(path, { ...options, method: 'PATCH', body }),
+  delete: <T>(path: string, options?: CallOptions) =>
+    request<T>(path, { ...options, method: 'DELETE' }),
 }
