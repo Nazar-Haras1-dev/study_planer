@@ -1,0 +1,21 @@
+@use '../styles/variables' as *;
+
+.not-found {
+  padding: 40px 16px;
+  text-align: center;
+
+  &__title {
+    margin: 0;
+    color: $color-primary-dark;
+    font-size: 3rem;
+  }
+
+  &__text {
+    color: $color-muted;
+  }
+
+  &__link {
+    color: $color-primary-dark;
+    font-weight: 600;
+  }
+}

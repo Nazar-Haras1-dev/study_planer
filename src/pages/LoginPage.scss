@@ -1,0 +1,87 @@
+@use '../styles/variables' as *;
+
+.login-page {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 22px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+
+  &__title {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+  }
+
+  &__hint {
+    margin: 0 0 16px;
+    color: $color-muted;
+    font-size: 0.88rem;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &__input {
+    padding: 9px 10px;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    background: $color-surface;
+    color: $color-text;
+
+    &:focus {
+      outline: 2px solid rgba($color-primary, 0.35);
+      border-color: $color-primary;
+    }
+
+    &--invalid {
+      border-color: $color-danger;
+    }
+  }
+
+  &__error {
+    margin: 0;
+    color: $color-danger;
+    font-size: 0.82rem;
+
+    &--form {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #fef2f2;
+    }
+  }
+
+  &__submit {
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: $color-primary;
+    color: #fff;
+    font-weight: 600;
+
+    &:hover:not(:disabled) {
+      background: $color-primary-dark;
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+  }
+}

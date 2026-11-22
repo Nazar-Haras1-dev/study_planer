@@ -21,8 +21,8 @@ type MutationResult<T> = { ok: true; value: T } | { ok: false }
  * SERVER STATE: завдання з API, пагінація та мутації.
  * UI/client state (фільтр, вибране завдання, форми) тут не зберігається.
  */
-export function useTasks(notify: (message: string, type?: ToastType) => void) {
-  const [page, setPage] = useState(1)
+// Номер сторінки приходить ззовні (з URL), тому тут він не зберігається.
+export function useTasks(page: number, notify: (message: string, type?: ToastType) => void) {
   const [reloadNonce, setReloadNonce] = useState(0)
   const [loaded, setLoaded] = useState<LoadedState | null>(null)
   const [busyIds, setBusyIds] = useState<number[]>([])
@@ -97,10 +97,9 @@ export function useTasks(notify: (message: string, type?: ToastType) => void) {
     async (values: TaskFormValues): Promise<boolean> => {
       const result = await mutate(null, () => taskRepository.create(values), 'Не вдалося створити завдання')
       if (!result.ok) return false
+      // Нове завдання показується зверху першої сторінки (на інших сторінках його не видно)
       if (page === 1) {
         setLoaded((prev) => prev && { ...prev, tasks: [result.value, ...prev.tasks] })
-      } else {
-        setPage(1)
       }
       notify('Завдання створено')
       return true
@@ -146,9 +145,7 @@ export function useTasks(notify: (message: string, type?: ToastType) => void) {
     status,
     tasks: loaded?.tasks ?? [],
     error: loaded?.error ?? null,
-    page,
     pageCount,
-    setPage,
     retry,
     busyIds,
     addTask,

@@ -1,42 +1,26 @@
 import { useState } from 'react'
-import type { Task, TaskFormValues } from '../types/task'
+import { Link } from 'react-router'
+import type { Task } from '../types/task'
 import { PRIORITY_LABELS } from '../data/labels'
-import TaskForm from './TaskForm'
 import './TaskItem.scss'
 
 interface TaskItemProps {
   task: Task
   // Виконується мережева операція над цим завданням
   busy: boolean
-  selected: boolean
-  onSelect: (id: number) => void
+  // Перевірка авторизації перед захищеною дією: false = користувача відправили на Login
+  guard: () => boolean
   onToggle: (task: Task) => void
-  onUpdate: (id: number, values: TaskFormValues) => Promise<boolean>
   onDelete: (id: number) => void
 }
 
-function TaskItem({ task, busy, selected, onSelect, onToggle, onUpdate, onDelete }: TaskItemProps) {
-  // Локальний UI-стан одного елемента: режим редагування та підтвердження видалення
-  const [isEditing, setIsEditing] = useState(false)
+function TaskItem({ task, busy, guard, onToggle, onDelete }: TaskItemProps) {
+  // Підтвердження видалення: локальний UI-стан одного елемента
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-
-  if (isEditing) {
-    // Повторне використання TaskForm у режимі редагування
-    return (
-      <li className="task-item task-item--editing">
-        <TaskForm
-          task={task}
-          onSubmit={(values) => onUpdate(task.id, values)}
-          onDone={() => setIsEditing(false)}
-        />
-      </li>
-    )
-  }
 
   const className = [
     'task-item',
     task.completed && 'task-item--completed',
-    selected && 'task-item--selected',
     busy && 'task-item--busy',
   ]
     .filter(Boolean)
@@ -49,24 +33,24 @@ function TaskItem({ task, busy, selected, onSelect, onToggle, onUpdate, onDelete
         type="checkbox"
         checked={task.completed}
         disabled={busy}
-        onChange={() => onToggle(task)}
+        onChange={() => {
+          if (guard()) onToggle(task)
+        }}
         aria-label={`Виконано: ${task.title}`}
       />
       <div className="task-item__body">
-        <h3 className="task-item__title">{task.title}</h3>
-        {task.description && (
-          <p className="task-item__description">{task.description}</p>
-        )}
+        <h3 className="task-item__title">
+          <Link className="task-item__link" to={`/tasks/${task.id}`}>
+            {task.title}
+          </Link>
+        </h3>
+        {task.description && <p className="task-item__description">{task.description}</p>}
         <div className="task-item__meta">
           <span className="task-item__category">{task.category}</span>
-          <span
-            className={`task-item__priority task-item__priority--${task.priority}`}
-          >
+          <span className={`task-item__priority task-item__priority--${task.priority}`}>
             {PRIORITY_LABELS[task.priority]}
           </span>
-          <span className="task-item__status">
-            {task.completed ? 'Виконано' : 'Не виконано'}
-          </span>
+          <span className="task-item__status">{task.completed ? 'Виконано' : 'Не виконано'}</span>
           {busy && <span className="task-item__saving">Збереження...</span>}
         </div>
       </div>
@@ -87,33 +71,23 @@ function TaskItem({ task, busy, selected, onSelect, onToggle, onUpdate, onDelete
             >
               Так, видалити
             </button>
-            <button
-              type="button"
-              className="task-item__button"
-              onClick={() => setConfirmingDelete(false)}
-            >
+            <button type="button" className="task-item__button" onClick={() => setConfirmingDelete(false)}>
               Скасувати
             </button>
           </div>
         </div>
       ) : (
         <div className="task-item__actions">
-          <button type="button" className="task-item__button" onClick={() => onSelect(task.id)}>
+          <Link className="task-item__button" to={`/tasks/${task.id}`}>
             Деталі
-          </button>
-          <button
-            type="button"
-            className="task-item__button"
-            disabled={busy}
-            onClick={() => setIsEditing(true)}
-          >
-            Редагувати
-          </button>
+          </Link>
           <button
             type="button"
             className="task-item__button task-item__button--danger"
             disabled={busy}
-            onClick={() => setConfirmingDelete(true)}
+            onClick={() => {
+              if (guard()) setConfirmingDelete(true)
+            }}
           >
             Видалити
           </button>

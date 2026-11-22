@@ -1,4 +1,4 @@
-import type { Task, TaskFormValues } from '../types/task'
+import type { Task } from '../types/task'
 import TaskItem from './TaskItem'
 import './TaskList.scss'
 
@@ -6,14 +6,12 @@ interface TaskListProps {
   // Уже відфільтровані завдання поточної сторінки
   tasks: Task[]
   busyIds: number[]
-  selectedId: number | null
-  onSelect: (id: number) => void
+  guard: () => boolean
   onToggle: (task: Task) => void
-  onUpdate: (id: number, values: TaskFormValues) => Promise<boolean>
   onDelete: (id: number) => void
 }
 
-function TaskList({ tasks, busyIds, ...handlers }: TaskListProps) {
+function TaskList({ tasks, busyIds, guard, onToggle, onDelete }: TaskListProps) {
   if (tasks.length === 0) {
     return <p className="task-list__empty">За цим фільтром завдань немає.</p>
   }
@@ -26,11 +24,9 @@ function TaskList({ tasks, busyIds, ...handlers }: TaskListProps) {
           key={task.id}
           task={task}
           busy={busyIds.includes(task.id)}
-          selected={handlers.selectedId === task.id}
-          onSelect={handlers.onSelect}
-          onToggle={handlers.onToggle}
-          onUpdate={handlers.onUpdate}
-          onDelete={handlers.onDelete}
+          guard={guard}
+          onToggle={onToggle}
+          onDelete={onDelete}
         />
       ))}
     </ul>

@@ -1,25 +1,31 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useTasks } from '../hooks/useTasks'
 import { useUiContext } from '../hooks/useUiContext'
-import { filterTasks } from '../utils/tasks'
-import Header from '../components/Header'
-import TaskForm from '../components/TaskForm'
+import { useRequireAuth } from '../hooks/useRequireAuth'
+import { filterTasks, parseTaskQuery } from '../utils/tasks'
+import TaskFormDialog from '../components/TaskFormDialog'
 import TaskStats from '../components/TaskStats'
 import TaskFilters from '../components/TaskFilters'
 import TaskList from '../components/TaskList'
-import TaskDetails from '../components/TaskDetails'
 import Pagination from '../components/Pagination'
 import StatePanel from '../components/StatePanel'
+import './TasksPage.scss'
 
 function TasksPage() {
-  const { filter, showToast } = useUiContext()
-  // Server state (API) — useTasks; client/UI state (filter, selectedId) — тут і в контексті
-  const tasksState = useTasks(showToast)
-  const { status, tasks, error, page, pageCount, setPage, retry } = tasksState
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const { showToast } = useUiContext()
+  const requireAuth = useRequireAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  // Фільтри та сторінка беруться з URL: /tasks?status=completed&priority=high&page=2
+  const query = parseTaskQuery(searchParams)
+
+  // Server state (API) у useTasks; UI state (відкритий dialog) тут
+  const tasksState = useTasks(query.page, showToast)
+  const { status, tasks, error, pageCount, retry } = tasksState
+  const [createOpen, setCreateOpen] = useState(false)
 
   // Derived state: фільтрований список рахуємо під час render
-  const visibleTasks = filterTasks(tasks, filter)
+  const visibleTasks = filterTasks(tasks, query)
   const activeCount = tasks.filter((task) => !task.completed).length
 
   // Синхронізація заголовка вкладки з кількістю невиконаних завдань
@@ -27,31 +33,41 @@ function TasksPage() {
     document.title = `Study Planner — ${activeCount} active tasks`
   }, [activeCount])
 
-  async function handleDelete(id: number) {
-    const ok = await tasksState.deleteTask(id)
-    if (ok && selectedId === id) setSelectedId(null)
+  function setPage(page: number) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (page <= 1) next.delete('page')
+      else next.set('page', String(page))
+      return next
+    })
+  }
+
+  function openCreate() {
+    // Перевірка авторизації перед дією: гостя перекидає на Login
+    if (requireAuth()) setCreateOpen(true)
   }
 
   return (
-    <main className="app">
-      <Header />
-      <TaskForm onSubmit={tasksState.addTask} />
-
-      {selectedId !== null && (
-        // key: при виборі іншого завдання компонент створюється заново зі свіжим запитом
-        <TaskDetails key={selectedId} taskId={selectedId} onClose={() => setSelectedId(null)} />
-      )}
+    <>
+      <div className="tasks-page__top">
+        <h1 className="tasks-page__title">Завдання</h1>
+        <button
+          type="button"
+          className="tasks-page__add"
+          aria-label="Створити завдання"
+          title="Створити завдання"
+          onClick={openCreate}
+        >
+          +
+        </button>
+      </div>
 
       {status === 'success' && <TaskStats tasks={tasks} />}
       <TaskFilters />
 
       {status === 'loading' && <StatePanel variant="loading" message="Loading..." />}
       {status === 'error' && (
-        <StatePanel
-          variant="error"
-          message={`Помилка завантаження. ${error ?? ''}`}
-          onRetry={retry}
-        />
+        <StatePanel variant="error" message={`Помилка завантаження. ${error ?? ''}`} onRetry={retry} />
       )}
       {status === 'success' && tasks.length === 0 && (
         <StatePanel variant="empty" message="Завдань не знайдено." />
@@ -60,16 +76,24 @@ function TasksPage() {
         <TaskList
           tasks={visibleTasks}
           busyIds={tasksState.busyIds}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
+          guard={requireAuth}
           onToggle={tasksState.toggleTask}
-          onUpdate={tasksState.updateTask}
-          onDelete={handleDelete}
+          onDelete={tasksState.deleteTask}
         />
       )}
 
-      <Pagination page={page} pageCount={pageCount} onChange={setPage} />
-    </main>
+      <Pagination page={query.page} pageCount={pageCount} onChange={setPage} />
+
+      <TaskFormDialog
+        open={createOpen}
+        mode="create"
+        onClose={() => setCreateOpen(false)}
+        onSubmit={async (data) => {
+          const ok = await tasksState.addTask(data)
+          if (!ok) throw new Error('Не вдалося створити завдання')
+        }}
+      />
+    </>
   )
 }
 

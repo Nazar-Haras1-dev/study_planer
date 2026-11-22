@@ -1,14 +1,16 @@
+import { RouterProvider } from 'react-router'
+import { AuthProvider } from './context/AuthContext'
 import { UiProvider } from './context/UiContext'
-import TasksPage from './pages/TasksPage'
-import Toast from './components/Toast'
-import './App.scss'
+import { router } from './routes/router'
 
+// Провайдери стоять над RouterProvider: сторінки та layout отримують доступ до сесії й Toast
 function App() {
   return (
-    <UiProvider>
-      <TasksPage />
-      <Toast />
-    </UiProvider>
+    <AuthProvider>
+      <UiProvider>
+        <RouterProvider router={router} />
+      </UiProvider>
+    </AuthProvider>
   )
 }
 

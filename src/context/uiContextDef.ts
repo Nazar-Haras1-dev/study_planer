@@ -1,5 +1,4 @@
 import { createContext } from 'react'
-import type { TaskFilter } from '../types/task'
 
 export type ToastType = 'success' | 'error' | 'info'
 
@@ -9,11 +8,9 @@ export interface ToastData {
   type: ToastType
 }
 
-// Контекст містить лише client/UI state: фільтр і Toast.
-// Server state (завдання з API) живе в хуку useTasks, а не тут.
+// Контекст містить лише Toast. Фільтри живуть в URL, дані завдань у useTasks,
+// сесія в AuthContext.
 export interface UiContextValue {
-  filter: TaskFilter
-  setFilter: (filter: TaskFilter) => void
   toast: ToastData | null
   showToast: (message: string, type?: ToastType) => void
   dismissToast: () => void

@@ -1,0 +1,109 @@
+@use '../styles/variables' as *;
+
+.task-dialog {
+  width: min(520px, calc(100vw - 32px));
+  padding: 0;
+  border: none;
+  border-radius: $radius;
+  background: $color-surface;
+  color: $color-text;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+
+  &::backdrop {
+    background: rgba(15, 23, 42, 0.55);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &__input {
+    padding: 8px 10px;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    background: $color-surface;
+    color: $color-text;
+    resize: vertical;
+
+    &:focus {
+      outline: 2px solid rgba($color-primary, 0.35);
+      border-color: $color-primary;
+    }
+
+    &--invalid {
+      border-color: $color-danger;
+    }
+  }
+
+  &__error {
+    margin: 0;
+    color: $color-danger;
+    font-size: 0.82rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  &__submit,
+  &__cancel {
+    padding: 8px 18px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 600;
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+  }
+
+  &__submit {
+    background: $color-primary;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: $color-primary-dark;
+    }
+  }
+
+  &__cancel {
+    background: $color-surface;
+    border-color: $color-border;
+    color: $color-text;
+  }
+
+  @media (max-width: 480px) {
+    &__row {
+      grid-template-columns: 1fr;
+    }
+  }
+}

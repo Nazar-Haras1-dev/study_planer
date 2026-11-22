@@ -1,0 +1,75 @@
+@use '../styles/variables' as *;
+
+.app-layout {
+  min-height: 100vh;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 24px;
+    background: $color-surface;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__brand {
+    color: $color-primary-dark;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  &__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__link {
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: $color-muted;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      background: $color-bg;
+    }
+
+    &--active {
+      background: #eef2ff;
+      color: $color-primary-dark;
+    }
+  }
+
+  &__user {
+    padding: 0 6px;
+    color: $color-muted;
+    font-size: 0.9rem;
+  }
+
+  &__logout {
+    padding: 6px 12px;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    background: $color-surface;
+    color: $color-text;
+    font-weight: 600;
+
+    &:hover {
+      background: $color-bg;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 16px 56px;
+  }
+}
