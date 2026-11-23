@@ -28,6 +28,3 @@ dist-ssr
 .env.*
 !.env.example
 
-# Службові файли асистента (не комітити)
-CLAUDE.md
-.claude/
