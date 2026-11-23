@@ -2,11 +2,12 @@ import type { Task } from '../types/task'
 import './TaskStats.scss'
 
 interface TaskStatsProps {
+  // Завдання поточної сторінки
   tasks: Task[]
 }
 
 function TaskStats({ tasks }: TaskStatsProps) {
-  // Derived state: рахуємо під час render із поточного масиву, окремий state не потрібен
+  // Derived state: рахуємо під час render із поточного масиву
   const total = tasks.length
   const completed = tasks.filter((task) => task.completed).length
   const active = total - completed
@@ -15,7 +16,7 @@ function TaskStats({ tasks }: TaskStatsProps) {
     <div className="task-stats">
       <div className="task-stats__item">
         <span className="task-stats__value">{total}</span>
-        <span className="task-stats__label">Всього</span>
+        <span className="task-stats__label">На сторінці</span>
       </div>
       <div className="task-stats__item task-stats__item--done">
         <span className="task-stats__value">{completed}</span>

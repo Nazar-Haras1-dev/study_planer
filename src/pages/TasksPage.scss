@@ -1,0 +1,30 @@
+@use '../styles/variables' as *;
+
+.tasks-page {
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.6rem;
+  }
+
+  &__add {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: $color-primary;
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+
+    &:hover {
+      background: $color-primary-dark;
+    }
+  }
+}

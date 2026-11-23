@@ -1,12 +1,19 @@
 @use '../styles/variables' as *;
 
 .task-filters {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  background: $color-surface;
-  border: 1px solid $color-border;
-  border-radius: $radius;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+
+  &__group {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+  }
 
   &__button {
     padding: 6px 14px;
@@ -28,5 +35,13 @@
         background: $color-primary;
       }
     }
+  }
+
+  &__select {
+    padding: 8px 10px;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    background: $color-surface;
+    color: $color-text;
   }
 }

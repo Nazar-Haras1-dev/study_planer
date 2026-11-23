@@ -1,0 +1,43 @@
+@use '../styles/variables' as *;
+
+.profile-page {
+  padding: 22px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  box-shadow: $shadow;
+
+  &__title {
+    margin: 0 0 14px;
+    font-size: 1.5rem;
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 18px;
+    margin: 0 0 18px;
+
+    dt {
+      color: $color-muted;
+      font-weight: 600;
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__logout {
+    padding: 9px 18px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: $color-surface;
+    color: $color-danger;
+    font-weight: 600;
+
+    &:hover {
+      background: #fef2f2;
+    }
+  }
+}

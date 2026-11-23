@@ -1,23 +1,36 @@
 @use '../styles/variables' as *;
 
-.task-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px;
+.login-page {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 22px;
   background: $color-surface;
   border: 1px solid $color-border;
   border-radius: $radius;
   box-shadow: $shadow;
 
+  &__title {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+  }
+
+  &__hint {
+    margin: 0 0 16px;
+    color: $color-muted;
+    font-size: 0.88rem;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
   &__field {
     display: flex;
     flex-direction: column;
     gap: 4px;
-
-    &--wide {
-      grid-column: 1 / -1;
-    }
   }
 
   &__label {
@@ -26,10 +39,11 @@
   }
 
   &__input {
-    padding: 8px 10px;
+    padding: 9px 10px;
     border: 1px solid $color-border;
     border-radius: 8px;
     background: $color-surface;
+    color: $color-text;
 
     &:focus {
       outline: 2px solid rgba($color-primary, 0.35);
@@ -45,39 +59,29 @@
     margin: 0;
     color: $color-danger;
     font-size: 0.82rem;
-  }
 
-  &__actions {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  &__submit,
-  &__cancel {
-    padding: 8px 18px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    font-weight: 600;
-  }
-
-  &__submit {
-    background: $color-primary;
-    color: #fff;
-
-    &:hover {
-      background: $color-primary-dark;
+    &--form {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #fef2f2;
     }
   }
 
-  &__cancel {
-    background: $color-surface;
-    border-color: $color-border;
-    color: $color-text;
-  }
+  &__submit {
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: $color-primary;
+    color: #fff;
+    font-weight: 600;
 
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
+    &:hover:not(:disabled) {
+      background: $color-primary-dark;
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
   }
 }

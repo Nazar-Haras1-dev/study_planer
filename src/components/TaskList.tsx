@@ -3,25 +3,15 @@ import TaskItem from './TaskItem'
 import './TaskList.scss'
 
 interface TaskListProps {
+  // Уже відфільтровані завдання поточної сторінки
   tasks: Task[]
-  // Загальна кількість завдань без фільтра: щоб відрізнити «порожній список» від «порожній результат фільтра»
-  totalCount: number
-  onToggle: (id: number) => void
+  busyIds: number[]
+  guard: () => boolean
+  onToggle: (task: Task) => void
   onDelete: (id: number) => void
 }
 
-function TaskList({ tasks, totalCount, onToggle, onDelete }: TaskListProps) {
-  // Умовний рендеринг: два різні порожні стани
-  if (totalCount === 0) {
-    return (
-      <p className="task-list__empty">
-        Завдань поки немає.
-        <br />
-        Додайте перше навчальне завдання.
-      </p>
-    )
-  }
-
+function TaskList({ tasks, busyIds, guard, onToggle, onDelete }: TaskListProps) {
   if (tasks.length === 0) {
     return <p className="task-list__empty">За цим фільтром завдань немає.</p>
   }
@@ -33,6 +23,8 @@ function TaskList({ tasks, totalCount, onToggle, onDelete }: TaskListProps) {
         <TaskItem
           key={task.id}
           task={task}
+          busy={busyIds.includes(task.id)}
+          guard={guard}
           onToggle={onToggle}
           onDelete={onDelete}
         />
